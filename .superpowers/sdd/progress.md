@@ -6,9 +6,9 @@ Started: 2026-06-25
 ## Tasks
 
 - [x] Task 1: Scaffolding do Projeto + Configuração da Janela (commits cfbd1e5..a189f1d, review clean)
-- [ ] Task 2: Design System — Tokens, Tipografia e Componentes Base
-- [ ] Task 3: Banco de Dados SQLite + Migrações
-- [ ] Task 4: Bridge IPC — Preload + Handlers no Main
+- [x] Task 2: Design System — Tokens, Tipografia e Componentes Base (commit 5378771, review clean)
+- [x] Task 3: Banco de Dados SQLite + Migrações (commit ad1b5a1, review clean)
+- [x] Task 4: Bridge IPC — Preload + Handlers no Main (commit 4e7672e, review clean)
 - [ ] Task 5: App Shell + Navigation Rail
 - [ ] Task 6: Modal de Primeiro Uso + Perfil do Mestre
 - [ ] Task 7: Tela de Configurações Completa

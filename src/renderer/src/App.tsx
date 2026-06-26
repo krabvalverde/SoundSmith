@@ -1,35 +1,28 @@
-import Versions from './components/Versions'
-import electronLogo from './assets/electron.svg'
+// src/renderer/src/App.tsx
+import { useState } from 'react'
+import { NavRail, Screen } from './components/NavRail'
+import { Sala } from './screens/Sala'
+import { Player } from './screens/Player'
+import { Campanhas } from './screens/Campanhas'
+import { Estudio } from './screens/Estudio'
+import { Configuracoes } from './screens/Configuracoes'
+import './App.css'
 
-function App(): React.JSX.Element {
-  const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
+export default function App() {
+  const [activeScreen, setActiveScreen] = useState<Screen>('Sala')
+
+  const screens: Record<Screen, React.ReactNode> = {
+    Sala: <Sala />,
+    Player: <Player />,
+    Campanhas: <Campanhas />,
+    Estudio: <Estudio />,
+    Configuracoes: <Configuracoes />
+  }
 
   return (
-    <>
-      <img alt="logo" className="logo" src={electronLogo} />
-      <div className="creator">Powered by electron-vite</div>
-      <div className="text">
-        Build an Electron app with <span className="react">React</span>
-        &nbsp;and <span className="ts">TypeScript</span>
-      </div>
-      <p className="tip">
-        Please try pressing <code>F12</code> to open the devTool
-      </p>
-      <div className="actions">
-        <div className="action">
-          <a href="https://electron-vite.org/" target="_blank" rel="noreferrer">
-            Documentation
-          </a>
-        </div>
-        <div className="action">
-          <a target="_blank" rel="noreferrer" onClick={ipcHandle}>
-            Send IPC
-          </a>
-        </div>
-      </div>
-      <Versions></Versions>
-    </>
+    <div className="app-shell">
+      <main className="app-content">{screens[activeScreen]}</main>
+      <NavRail active={activeScreen} onNavigate={setActiveScreen} />
+    </div>
   )
 }
-
-export default App
