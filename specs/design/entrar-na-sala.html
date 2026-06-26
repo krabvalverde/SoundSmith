@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SoundSmith — Entrar em Sala (referência de design)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Metamorphous&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+/* Componente de ícones lucide — mesmo padrão do protótipo SoundSmith.dc.html */
+(function(){
+  var cache = {};
+  function load(name){
+    if(cache[name]) return cache[name];
+    cache[name] = fetch('https://unpkg.com/lucide-static@latest/icons/' + name + '.svg')
+      .then(function(r){ return r.ok ? r.text() : ''; })
+      .then(function(t){ return t ? t.replace('<svg', '<svg style="width:100%;height:100%;display:block"') : ''; })
+      .catch(function(){ return ''; });
+    return cache[name];
+  }
+  if(!customElements.get('ss-icon')){
+    customElements.define('ss-icon', class extends HTMLElement{
+      static get observedAttributes(){ return ['name']; }
+      connectedCallback(){
+        this.style.display='inline-flex'; this.style.alignItems='center'; this.style.justifyContent='center'; this.style.flexShrink='0';
+        if(!this._root){ this._root = this.attachShadow({mode:'open'}); }
+        this.update();
+      }
+      attributeChangedCallback(){ if(this._root){ this.update(); } }
+      update(){
+        var name = this.getAttribute('name'); if(!name) return;
+        var self = this; this._cur = name;
+        load(name).then(function(svg){ if(self._cur === name && self._root){ self._root.innerHTML = svg; } });
+      }
+    });
+  }
+})();
+</script>
+<style>
+  :root{
+    --accent:#8b5cf6; --accent2:#a78bfa; --bg:#0f0d11; --surface:#16131b;
+    --text:#ECECEF; --muted:#a6a6b2; --muted2:#7a7a86; --muted3:#6a6a76;
+    --line:rgba(255,255,255,0.07); --green:#22c55e; --combat:#f87171;
+  }
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+  html,body{margin:0;padding:0;background:var(--bg);}
+  body{
+    font-family:'Manrope',sans-serif;color:var(--text);
+    background:radial-gradient(1000px 520px at 100% -6%, rgba(139,92,246,0.06), transparent 62%), var(--bg);
+    padding:40px 24px 80px;
+  }
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:0.045;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .wrap{max-width:1120px;margin:0 auto;}
+  .page-h{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+  .logo{width:44px;height:44px;border-radius:13px;background:radial-gradient(125% 120% at 28% 16%, #9d8bff 0%, #6f59e6 44%, #463a9e 100%);display:flex;align-items:center;justify-content:center;}
+  .page-h h1{font-family:'Metamorphous',serif;font-weight:400;font-size:30px;margin:0;}
+  .page-sub{color:var(--muted2);font-size:13.5px;margin:0 0 34px 58px;}
+  .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700;}
+  .state-label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);font-weight:700;margin:34px 0 14px;display:flex;align-items:center;gap:9px;}
+  .state-label .num{width:22px;height:22px;border-radius:7px;background:rgba(139,92,246,0.16);border:1px solid rgba(139,92,246,0.4);color:#c4b5fd;display:inline-flex;align-items:center;justify-content:center;font-size:11px;}
+  /* faux backdrop para os modais */
+  .backdrop{position:relative;background:rgba(6,5,9,0.5);border:1px solid var(--line);border-radius:20px;padding:46px 20px;display:flex;justify-content:center;}
+  .modal{width:480px;max-width:100%;background:var(--surface);border:1px solid rgba(255,255,255,0.1);border-radius:22px;box-shadow:0 40px 90px -30px rgba(0,0,0,0.85);overflow:hidden;}
+  .modal-head{padding:24px 26px 18px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+  .modal-head h2{font-family:'Metamorphous',serif;font-weight:400;font-size:27px;margin:6px 0 4px;}
+  .modal-head p{margin:0;color:var(--muted);font-size:13px;}
+  .xbtn{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#9a9aa6;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .modal-body{padding:22px 26px 6px;}
+  label.fld{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);font-weight:700;margin:18px 0 9px;}
+  label.fld:first-child{margin-top:0;}
+  .inp{width:100%;background:rgba(8,8,11,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px 15px;color:#fff;font-family:inherit;font-size:15px;outline:none;}
+  .inp:focus{border-color:rgba(139,92,246,0.6);}
+  .code-row{display:flex;gap:10px;}
+  .code-box{flex:1;aspect-ratio:1/1;max-width:58px;background:rgba(8,8,11,0.5);border:1px solid rgba(255,255,255,0.12);border-radius:12px;color:#fff;font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:600;text-align:center;outline:none;text-transform:uppercase;}
+  .code-box:focus{border-color:rgba(139,92,246,0.7);background:rgba(139,92,246,0.08);}
+  .modal-foot{padding:18px 26px 22px;margin-top:10px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:flex-end;gap:10px;}
+  .btn{font-family:inherit;font-weight:700;font-size:13.5px;border-radius:11px;padding:11px 20px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;}
+  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.12);color:#cfcfd6;}
+  .btn-primary{background:var(--accent);border:none;color:#fff;}
+  /* estado B — progresso */
+  .step{display:flex;align-items:center;gap:13px;padding:12px 2px;}
+  .step .ic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .ic.done{background:rgba(34,197,94,0.14);color:#86efac;}
+  .ic.prog{background:rgba(139,92,246,0.16);color:#c4b5fd;}
+  .ic.pend{background:rgba(255,255,255,0.05);color:var(--muted2);}
+  .step .t{flex:1;font-size:14px;font-weight:600;}
+  .step .v{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--muted);}
+  .bar{height:7px;border-radius:5px;background:rgba(255,255,255,0.08);overflow:hidden;margin:2px 0 4px 43px;}
+  .bar > i{display:block;height:100%;width:64%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:5px;}
+  .camp-line{display:flex;align-items:center;gap:12px;margin:14px 2px 4px;color:var(--muted);font-size:13px;}
+  /* estado C — sessão do jogador */
+  .session{background:linear-gradient(160deg, rgba(139,92,246,0.10), rgba(20,20,26,0.2)), var(--surface);border:1px solid var(--line);border-radius:22px;padding:22px 26px;}
+  .session-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+  .badge{display:inline-flex;align-items:center;gap:8px;background:rgba(34,197,94,0.14);border:1px solid rgba(34,197,94,0.35);padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;color:#86efac;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:13px;color:#cfcfd6;background:rgba(255,255,255,0.04);border:1px solid var(--line);border-radius:10px;padding:7px 12px;}
+  .cover{width:120px;height:120px;border-radius:18px;flex-shrink:0;background:radial-gradient(125% 135% at 74% 10%, rgba(141,99,247,0.55), transparent 60%), #181426;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.08);}
+  .cover span{font-family:'Metamorphous',serif;font-size:50px;color:rgba(255,255,255,0.9);}
+  .loop-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(248,113,113,0.14);border:1px solid rgba(248,113,113,0.34);padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;color:var(--combat);margin-bottom:11px;}
+  .eq{display:flex;align-items:flex-end;gap:5px;height:20px;margin-top:14px;}
+  .eq span{width:3px;background:var(--accent);border-radius:2px;height:100%;transform-origin:bottom;animation:eq .9s ease-in-out infinite;}
+  .eq span:nth-child(2){animation-delay:.25s;background:var(--accent2)}
+  .eq span:nth-child(3){animation-delay:.1s}
+  .eq span:nth-child(4){animation-delay:.4s;background:var(--accent2)}
+  .eq span:nth-child(5){animation-delay:.15s;background:#c4b5fd}
+  @keyframes eq{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+  .prog{height:6px;border-radius:4px;background:rgba(255,255,255,0.08);position:relative;overflow:hidden;margin-top:24px;}
+  .prog > i{position:absolute;inset:0 auto 0 0;width:36%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;}
+  .times{display:flex;justify-content:space-between;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8a8a96;}
+  .vol{display:flex;align-items:center;gap:13px;margin-top:22px;padding-top:20px;border-top:1px solid var(--line);}
+  .vol .track{flex:1;height:5px;border-radius:4px;background:rgba(255,255,255,0.10);position:relative;}
+  .vol .track i{position:absolute;inset:0 auto 0 0;width:72%;background:#fff;border-radius:4px;opacity:.85;}
+  .vol .knob{position:absolute;top:50%;left:72%;width:14px;height:14px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 0 4px rgba(139,92,246,0.25);}
+  .vol .lbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);font-weight:700;}
+  .note{color:var(--muted3);font-size:12px;margin:10px 2px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="page-h">
+    <div class="logo"><ss-icon name="audio-waveform" style="width:24px;height:24px;color:#fff;"></ss-icon></div>
+    <div>
+      <div class="eyebrow">SoundSmith · Sala</div>
+      <h1>Entrar em Sala</h1>
+    </div>
+  </div>
+  <p class="page-sub">Referência de design das três etapas do fluxo do jogador (SDD 04 §5.2).</p>
+
+  <!-- ESTADO A -->
+  <div class="state-label"><span class="num">A</span> Formulário de entrada</div>
+  <div class="backdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="eyebrow"><ss-icon name="radio" style="width:12px;height:12px;vertical-align:-1px;"></ss-icon> Sessão Multiplayer</div>
+          <h2>Entrar em Sala</h2>
+          <p>Conecte-se à mesa do seu Mestre.</p>
+        </div>
+        <button class="xbtn"><ss-icon name="x" style="width:18px;height:18px;"></ss-icon></button>
+      </div>
+      <div class="modal-body">
+        <label class="fld">Código da Sala</label>
+        <div class="code-row" id="code">
+          <input class="code-box" maxlength="1" value="K">
+          <input class="code-box" maxlength="1" value="7">
+          <input class="code-box" maxlength="1" value="P">
+          <input class="code-box" maxlength="1" value="2">
+          <input class="code-box" maxlength="1" value="Q">
+          <input class="code-box" maxlength="1" value="9">
+        </div>
+        <label class="fld">IP da VPN do host</label>
+        <input class="inp" value="10.84.0.1" style="font-family:'JetBrains Mono',monospace;">
+        <label class="fld">Seu nome</label>
+        <input class="inp" value="Thalíndra">
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost">Cancelar</button>
+        <button class="btn btn-primary"><ss-icon name="log-in" style="width:16px;height:16px;"></ss-icon> Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESTADO B -->
+  <div class="state-label"><span class="num">B</span> Conectando / baixando a trilha</div>
+  <div class="backdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="eyebrow">Aguarde</div>
+          <h2>Entrando na sala K7P2Q9</h2>
+        </div>
+      </div>
+      <div class="modal-body" style="padding-bottom:18px;">
+        <div class="step">
+          <span class="ic done"><ss-icon name="check" style="width:16px;height:16px;"></ss-icon></span>
+          <span class="t">Conectado ao host</span>
+          <span class="v" style="color:#86efac;">OK</span>
+        </div>
+        <div class="step">
+          <span class="ic prog"><ss-icon name="loader" style="width:16px;height:16px;"></ss-icon></span>
+          <span class="t">Baixando a trilha</span>
+          <span class="v">15 / 24 faixas · 64%</span>
+        </div>
+        <div class="bar"><i></i></div>
+        <div class="step">
+          <span class="ic pend"><ss-icon name="circle" style="width:16px;height:16px;"></ss-icon></span>
+          <span class="t" style="color:var(--muted);">Sincronizando relógio</span>
+          <span class="v">—</span>
+        </div>
+        <div class="camp-line">
+          <span class="cover" style="width:40px;height:40px;border-radius:11px;"><span style="font-size:18px;">MV</span></span>
+          <span><b style="color:var(--text);">As Minas de Veridian</b> · 24 faixas</span>
+        </div>
+      </div>
+      <div class="modal-foot"><button class="btn btn-ghost">Cancelar</button></div>
+    </div>
+  </div>
+
+  <!-- ESTADO C -->
+  <div class="state-label"><span class="num">C</span> Em sessão — jogador</div>
+  <div class="session">
+    <div class="session-top">
+      <div class="eyebrow" style="color:var(--muted2);display:flex;align-items:center;gap:8px;"><ss-icon name="circle-play" style="width:14px;height:14px;color:var(--accent2);"></ss-icon> Em sessão · Jogador</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="badge"><span class="dot"></span> AO VIVO</span>
+        <span class="pill">Sala K7P2Q9</span>
+        <button class="btn btn-ghost" style="padding:8px 14px;font-size:12.5px;"><ss-icon name="log-out" style="width:14px;height:14px;"></ss-icon> Sair</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:22px;align-items:center;">
+      <div class="cover"><span>MV</span></div>
+      <div style="min-width:0;">
+        <div class="loop-badge"><span style="width:6px;height:6px;border-radius:50%;background:var(--combat);"></span> LOOP: COMBATE</div>
+        <h2 style="font-family:'Metamorphous',serif;font-weight:400;font-size:30px;margin:0 0 7px;">Emboscada nas Minas</h2>
+        <div style="font-size:14px;color:var(--muted);display:flex;align-items:center;gap:7px;"><ss-icon name="book-open" style="width:15px;height:15px;"></ss-icon> As Minas de Veridian</div>
+        <div class="eq"><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+    </div>
+    <div class="prog"><i></i></div>
+    <div class="times"><span>2:14</span><span>6:20</span></div>
+    <div class="vol">
+      <ss-icon name="volume-2" style="width:18px;height:18px;color:#8a8a96;"></ss-icon>
+      <div class="track"><i></i><span class="knob"></span></div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#9a9aa6;width:28px;text-align:right;">72</span>
+      <span class="vol lbl" style="border:none;padding:0;margin:0;">só você</span>
+    </div>
+    <p class="note">O jogador não tem controles de reprodução — play/pause, seek e troca de loop são prerrogativas do Mestre. Apenas o volume é local.</p>
+  </div>
+
+</div>
+
+<script>
+  /* auto-avanço entre as caixas do código (toque de interatividade no mockup) */
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('#code .code-box'));
+  boxes.forEach(function(b, i){
+    b.addEventListener('input', function(){
+      b.value = b.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+      if(b.value && i < boxes.length-1) boxes[i+1].focus();
+    });
+    b.addEventListener('keydown', function(e){
+      if(e.key === 'Backspace' && !b.value && i>0) boxes[i-1].focus();
+    });
+  });
+</script>
+</body>
+</html>

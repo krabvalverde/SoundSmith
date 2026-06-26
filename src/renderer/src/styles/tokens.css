@@ -1,0 +1,41 @@
+/* src/renderer/src/styles/tokens.css */
+:root {
+  --color-bg: #0f0d11;
+  --color-surface-1: #16131b;
+  --color-surface-2: #16161b;
+  --color-surface-3: #121217;
+
+  --color-text-primary: #ECECEF;
+  --color-text-secondary: #a6a6b2;
+  --color-text-tertiary: #7a7a86;
+
+  --color-accent: #8b5cf6;
+  --color-accent-alpha-10: rgba(139, 92, 246, 0.10);
+  --color-accent-alpha-20: rgba(139, 92, 246, 0.20);
+  --color-accent-alpha-30: rgba(139, 92, 246, 0.30);
+
+  --color-success: #22c55e;
+  --color-success-light: #86efac;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fcd34d;
+  --color-error: #f87171;
+  --color-error-light: #fca5a5;
+
+  --loop-teal: #2dd4bf;
+  --loop-blue: #60a5fa;
+  --loop-red: #f87171;
+  --loop-purple: #a78bfa;
+  --loop-magenta: #e879f9;
+  --loop-amber: #fbbf24;
+
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.10);
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+
+  --font-display: 'Metamorphous', 'Georgia', serif;
+  --font-ui: 'Manrope', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+}
