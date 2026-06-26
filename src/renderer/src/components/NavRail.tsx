@@ -1,5 +1,7 @@
 // src/renderer/src/components/NavRail.tsx
 import { House, CirclePlay, Library, Waypoints, Settings } from 'lucide-react'
+import { MasterAvatar } from './MasterAvatar'
+import { Profile } from '../types/soundsmith'
 import './NavRail.css'
 
 export type Screen = 'Sala' | 'Player' | 'Campanhas' | 'Estudio' | 'Configuracoes'
@@ -14,11 +16,17 @@ const NAV_ITEMS: { label: Screen; display: string; icon: React.ReactNode }[] = [
 interface Props {
   active: Screen
   onNavigate: (s: Screen) => void
+  profile: Profile | null
 }
 
-export function NavRail({ active, onNavigate }: Props) {
+export function NavRail({ active, onNavigate, profile }: Props) {
   return (
     <nav className="nav-rail" aria-label="Navegação principal">
+      {profile && (
+        <div className="nav-rail-avatar">
+          <MasterAvatar profile={profile} size={40} />
+        </div>
+      )}
       <div className="nav-rail-items">
         {NAV_ITEMS.map(({ label, display, icon }) => (
           <button

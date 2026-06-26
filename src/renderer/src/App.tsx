@@ -35,7 +35,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <main className="app-content">{screens[activeScreen]}</main>
-      <NavRail active={activeScreen} onNavigate={setActiveScreen} />
+      <NavRail active={activeScreen} onNavigate={setActiveScreen} profile={profile} />
     </div>
   )
 }
