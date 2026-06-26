@@ -14,7 +14,12 @@ export function FirstRunModal({ onComplete }: Props) {
     const trimmed = name.trim()
     if (!trimmed) { setError('Digite seu nome para começar.'); return }
     setLoading(true)
-    await onComplete(trimmed)
+    try {
+      await onComplete(trimmed)
+    } catch {
+      setLoading(false)
+      setError('Erro ao criar perfil. Tente novamente.')
+    }
   }
 
   return (
