@@ -1,0 +1,11 @@
+/* src/renderer/src/modals/FirstRunModal.css */
+.first-run-overlay { background: var(--color-bg); }
+.first-run-modal { text-align: center; padding: 48px 40px; }
+.first-run-title {
+  font-family: var(--font-display); font-size: 28px;
+  color: var(--color-text-primary); margin-bottom: 8px;
+}
+.first-run-subtitle { color: var(--color-text-secondary); margin-bottom: 28px; }
+.first-run-form { display: flex; flex-direction: column; gap: 12px; }
+.first-run-error { color: var(--color-error); font-size: 13px; text-align: left; }
+.first-run-btn { width: 100%; justify-content: center; padding: 12px; font-size: 15px; }

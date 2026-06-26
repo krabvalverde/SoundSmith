@@ -9,7 +9,7 @@ Started: 2026-06-25
 - [x] Task 2: Design System — Tokens, Tipografia e Componentes Base (commit 5378771, review clean)
 - [x] Task 3: Banco de Dados SQLite + Migrações (commit ad1b5a1, review clean)
 - [x] Task 4: Bridge IPC — Preload + Handlers no Main (commit 4e7672e, review clean)
-- [ ] Task 5: App Shell + Navigation Rail
+- [x] Task 5: App Shell + Navigation Rail (commit b9406e3, review clean)
 - [ ] Task 6: Modal de Primeiro Uso + Perfil do Mestre
 - [ ] Task 7: Tela de Configurações Completa
 - [ ] Task 8: Motor de Áudio (Web Audio API)
