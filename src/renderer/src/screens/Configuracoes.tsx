@@ -21,7 +21,7 @@ interface Props {
 interface LibraryPathEntry { id: number; path: string; file_count: number }
 
 export function Configuracoes({ profile, onUpdateProfile }: Props) {
-  const { settings, setSetting } = useSettingsStore()
+  const { settings, setSetting, loaded } = useSettingsStore()
   const [editName, setEditName] = useState(profile.name)
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([])
   const [sampleRate, setSampleRate] = useState<number | null>(null)
@@ -45,13 +45,13 @@ export function Configuracoes({ profile, onUpdateProfile }: Props) {
     window.soundsmith.system.getAppVersion().then(setAppVersion)
 
     window.soundsmith.libraryPaths.list().then(async paths => {
-      const entries = await Promise.all(
+      const results = await Promise.allSettled(
         paths.map(async p => ({
           id: p.id, path: p.path,
           file_count: await window.soundsmith.libraryPaths.countAudioFiles(p.path)
         }))
       )
-      setLibPaths(entries)
+      setLibPaths(results.flatMap(r => r.status === 'fulfilled' ? [r.value] : []))
     })
   }, [])
 
@@ -67,6 +67,8 @@ export function Configuracoes({ profile, onUpdateProfile }: Props) {
     await window.soundsmith.libraryPaths.remove(id)
     setLibPaths(prev => prev.filter(p => p.id !== id))
   }
+
+  if (!loaded) return <div className="config-screen" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}><span style={{ color: 'var(--color-text-tertiary)' }}>Carregando…</span></div>
 
   return (
     <div className="config-screen">

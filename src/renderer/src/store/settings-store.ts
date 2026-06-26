@@ -37,10 +37,16 @@ export function useSettingsStore() {
   }, [])
 
   const setSetting = useCallback(async (key: string, value: string) => {
-    await window.soundsmith.settings.set(key, value)
-    setSettings(prev => ({ ...prev, [key]: value }))
+    const prev = settings  // capture before update
+    setSettings(s => ({ ...s, [key]: value }))
     if (key === 'accent_color') applyAccent(value)
-  }, [])
+    try {
+      await window.soundsmith.settings.set(key, value)
+    } catch {
+      setSettings(prev)
+      if (key === 'accent_color') applyAccent(prev['accent_color'])
+    }
+  }, [settings])
 
   return { settings, setSetting, loaded }
 }
