@@ -1,22 +1,26 @@
-import { contextBridge } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
+// src/preload/index.ts
+import { contextBridge, ipcRenderer } from 'electron'
 
-// Custom APIs for renderer
-const api = {}
-
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
-if (process.contextIsolated) {
-  try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
-  } catch (error) {
-    console.error(error)
+contextBridge.exposeInMainWorld('soundsmith', {
+  profile: {
+    get: () => ipcRenderer.invoke('profile:get'),
+    create: (name: string) => ipcRenderer.invoke('profile:create', name),
+    update: (name: string) => ipcRenderer.invoke('profile:update', name)
+  },
+  settings: {
+    get: (key: string) => ipcRenderer.invoke('settings:get', key),
+    set: (key: string, value: string) => ipcRenderer.invoke('settings:set', key, value),
+    getAll: () => ipcRenderer.invoke('settings:getAll')
+  },
+  libraryPaths: {
+    list: () => ipcRenderer.invoke('libraryPaths:list'),
+    add: (path: string) => ipcRenderer.invoke('libraryPaths:add', path),
+    remove: (id: number) => ipcRenderer.invoke('libraryPaths:remove', id),
+    countAudioFiles: (path: string) => ipcRenderer.invoke('libraryPaths:countAudio', path)
+  },
+  system: {
+    getNetworkInterfaces: () => ipcRenderer.invoke('system:getNetworkInterfaces'),
+    openDirectoryDialog: () => ipcRenderer.invoke('system:openDirectoryDialog'),
+    getAppVersion: () => ipcRenderer.invoke('system:getAppVersion')
   }
-} else {
-  // @ts-ignore (define in dts)
-  window.electron = electronAPI
-  // @ts-ignore (define in dts)
-  window.api = api
-}
+})
