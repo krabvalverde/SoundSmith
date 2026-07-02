@@ -27,6 +27,8 @@ O projeto é construído em partes, nesta ordem:
 | 2 | **Estúdio** | [`02-estudio.md`](./02-estudio.md) | Campanhas |
 | 3 | **Player** | [`03-player.md`](./03-player.md) | Campanhas, Estúdio |
 | 4 | **Sala** (multiplayer online) | [`04-sala.md`](./04-sala.md) | Player |
+| 5 | **Correções** (shell, identidade, player) | [`05-correcoes.md`](./05-correcoes.md) | Fundação, Player |
+| 6 | **Identidade Visual** ("A Forja") | [`06-identidade-visual.md`](./06-identidade-visual.md) | Fundação, telas 01–04 |
 
 > A **Fundação (0)** não é uma "parte" pedida explicitamente, mas reúne os
 > elementos transversais (navegação, perfil do Mestre, Configurações, esquema

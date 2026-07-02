@@ -1,9 +1,9 @@
 {
   "name": "soundsmith",
   "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
+  "description": "Trilhas sonoras dinâmicas e sincronizadas para mesas de RPG",
   "main": "./out/main/index.js",
-  "author": "example.com",
+  "author": "SoundSmith",
   "homepage": "https://electron-vite.org",
   "scripts": {
     "format": "prettier --write .",
@@ -24,7 +24,8 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "better-sqlite3": "^12.11.1",
-    "lucide-react": "^1.21.0"
+    "lucide-react": "^1.21.0",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
@@ -34,6 +35,7 @@
     "@types/node": "^22.19.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^5.1.1",
     "electron": "^39.2.6",
     "electron-builder": "^26.0.12",

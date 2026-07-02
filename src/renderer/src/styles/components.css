@@ -6,23 +6,32 @@
   padding: 8px 16px; border-radius: var(--radius-sm);
   font-family: var(--font-ui); font-size: 14px; font-weight: 500;
   cursor: pointer; border: none;
-  transition: opacity 0.15s, background 0.15s;
+  transition: background var(--motion-fast), filter var(--motion-fast), transform var(--motion-fast);
   white-space: nowrap;
 }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn:active:not(:disabled) { opacity: 0.8; }
 .btn-primary { background: var(--color-accent); color: #fff; }
-.btn-primary:hover:not(:disabled) { opacity: 0.9; }
+.btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
+.btn-primary:active:not(:disabled) { transform: translateY(1px); filter: brightness(0.95); }
 .btn-secondary {
   background: transparent; color: var(--color-text-primary);
   border: 1px solid var(--border-default);
 }
-.btn-secondary:hover:not(:disabled) { background: var(--border-subtle); }
+.btn-secondary:hover:not(:disabled) { background: var(--color-surface-3); }
+.btn-secondary:active:not(:disabled) { transform: translateY(1px); }
 .btn-ghost {
   background: transparent; color: var(--color-text-secondary);
   padding: 6px 10px;
 }
-.btn-ghost:hover:not(:disabled) { color: var(--color-text-primary); background: var(--border-subtle); }
+.btn-ghost:hover:not(:disabled) { color: var(--color-text-primary); background: var(--color-surface-3); }
+.btn-ghost:active:not(:disabled) { transform: translateY(1px); }
+.btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+.btn-danger:hover:not(:disabled) { background: rgba(239, 68, 68, 0.25); }
+.btn-danger:active:not(:disabled) { transform: translateY(1px); }
 
 /* --- Card --- */
 .card {
@@ -120,12 +129,20 @@ select.input {
 
 /* --- Typography helpers --- */
 .section-title {
-  font-family: var(--font-display); font-size: 18px;
+  font-family: var(--font-display); font-size: var(--type-title-size);
+  font-weight: var(--type-title-weight);
   color: var(--color-text-primary); margin-bottom: 16px;
 }
+.screen-title {
+  font-family: var(--font-display);
+  font-size: var(--type-display-size);
+  font-weight: var(--type-display-weight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
 .label {
-  font-size: 12px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.08em;
+  font-size: var(--type-eyebrow-size); font-weight: var(--type-eyebrow-weight);
+  text-transform: uppercase; letter-spacing: var(--type-eyebrow-tracking);
   color: var(--color-text-tertiary); margin-bottom: 6px;
   display: block;
 }

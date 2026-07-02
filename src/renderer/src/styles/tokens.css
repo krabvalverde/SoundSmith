@@ -1,9 +1,9 @@
 /* src/renderer/src/styles/tokens.css */
 :root {
-  --color-bg: #0f0d11;
-  --color-surface-1: #16131b;
-  --color-surface-2: #16161b;
-  --color-surface-3: #121217;
+  --color-bg: #121014;
+  --color-surface-1: #191519;
+  --color-surface-2: #201a1f;
+  --color-surface-3: #282026;
 
   --color-text-primary: #ECECEF;
   --color-text-secondary: #a6a6b2;
@@ -13,6 +13,12 @@
   --color-accent-alpha-10: rgba(139, 92, 246, 0.10);
   --color-accent-alpha-20: rgba(139, 92, 246, 0.20);
   --color-accent-alpha-30: rgba(139, 92, 246, 0.30);
+
+  --color-brasa: #f0913d;
+  --color-brasa-clara: #ffc07a;
+  --color-brasa-alpha-10: rgba(240, 145, 61, 0.10);
+  --color-brasa-alpha-20: rgba(240, 145, 61, 0.20);
+  --color-brasa-alpha-35: rgba(240, 145, 61, 0.35);
 
   --color-success: #22c55e;
   --color-success-light: #86efac;
@@ -38,4 +44,22 @@
   --font-display: 'Metamorphous', 'Georgia', serif;
   --font-ui: 'Manrope', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  --type-display-size: 28px;
+  --type-display-weight: 400;
+  --type-title-size: 18px;
+  --type-title-weight: 400;
+  --type-body-size: 14px;
+  --type-caption-size: 12px;
+  --type-caption-weight: 500;
+  --type-eyebrow-size: 11px;
+  --type-eyebrow-weight: 700;
+  --type-eyebrow-tracking: 0.1em;
+  --type-data-size: 13px;
+  --type-data-weight: 500;
+
+  --motion-fast: 150ms;
+  --motion-base: 250ms;
+  --motion-slow: 600ms;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
 }

@@ -9,7 +9,7 @@ const ACCENT_OPTIONS = [
   { value: '#8b5cf6', label: 'Roxo' },
   { value: '#3b82f6', label: 'Azul' },
   { value: '#10b981', label: 'Verde' },
-  { value: '#f59e0b', label: 'Âmbar' },
+  { value: '#06b6d4', label: 'Ciano' },
   { value: '#ec4899', label: 'Rosa' }
 ]
 
@@ -72,7 +72,7 @@ export function Configuracoes({ profile, onUpdateProfile }: Props) {
 
   return (
     <div className="config-screen">
-      <h1 className="section-title config-page-title">Configurações</h1>
+      <h1 className="screen-title config-page-title">Configurações</h1>
 
       {/* Perfil */}
       <section className="config-section">

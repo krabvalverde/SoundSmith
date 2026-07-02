@@ -1,0 +1,514 @@
+/* src/renderer/src/screens/Player.css */
+
+.player-screen {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.player-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px 32px 24px;
+  overflow-y: auto;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.player-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px 24px 24px;
+  overflow-y: auto;
+}
+
+/* Section label */
+.section-label {
+  display: block;
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--type-eyebrow-weight);
+  text-transform: uppercase;
+  letter-spacing: var(--type-eyebrow-tracking);
+  color: var(--color-text-tertiary);
+  margin-bottom: 8px;
+}
+
+/* ── Now playing card ─────────────────────────────────────── */
+.now-playing-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 16px 20px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.cover-area {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Forja acesa: halo behind cover when audio is playing (FORJ-RF-01) */
+.cover-halo {
+  position: absolute;
+  top: 82px;
+  left: 50%;
+  width: 260px;
+  height: 260px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-brasa-alpha-35) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--motion-slow) var(--motion-ease);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cover-halo--active {
+  opacity: 1;
+}
+
+/* Campaign cover */
+.player-cover {
+  position: relative;
+  width: 164px;
+  height: 164px;
+  border-radius: var(--radius-md);
+  background: radial-gradient(ellipse at 50% 0%, var(--cover-glow) 0%, var(--cover-base) 65%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.player-cover--empty {
+  background: var(--color-surface-2);
+  border: 1px solid var(--border-subtle);
+  color: var(--color-text-tertiary);
+}
+
+.player-cover-initials {
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+  user-select: none;
+  line-height: 1;
+}
+
+/* Loop badge */
+.loop-badge {
+  position: relative;
+  z-index: 1;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 11px;
+  border-radius: 20px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--border-subtle);
+  color: var(--color-text-secondary);
+  transition: background var(--motion-slow) var(--motion-ease),
+    color var(--motion-slow) var(--motion-ease),
+    border-color var(--motion-slow) var(--motion-ease),
+    box-shadow var(--motion-slow) var(--motion-ease);
+}
+
+.loop-badge--playing {
+  background: var(--color-brasa-alpha-20);
+  border-color: var(--color-brasa);
+  color: var(--color-brasa);
+  box-shadow: 0 0 14px var(--color-brasa-alpha-20);
+}
+
+/* Track info */
+.track-info {
+  text-align: center;
+}
+
+.track-info-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 4px;
+  line-height: 1.3;
+}
+
+.track-info-campaign {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+/* EQ bars — forja acesa: brasa only while playing (FORJ-RF-01) */
+.eq-bars {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 24px;
+  opacity: 0;
+  transition: opacity var(--motion-slow) var(--motion-ease);
+}
+
+.eq-bars span {
+  display: block;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--color-brasa);
+  height: 4px;
+  animation: eq-bounce var(--eq-d, 0.5s) ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+
+.eq-bars span:nth-child(1) { --eq-d: 0.45s; }
+.eq-bars span:nth-child(2) { --eq-d: 0.6s;  animation-delay: 0.1s; }
+.eq-bars span:nth-child(3) { --eq-d: 0.4s;  animation-delay: 0.2s; }
+.eq-bars span:nth-child(4) { --eq-d: 0.55s; animation-delay: 0.05s; }
+.eq-bars span:nth-child(5) { --eq-d: 0.7s;  animation-delay: 0.15s; }
+
+.eq-bars--playing {
+  opacity: 1;
+}
+
+.eq-bars--playing span {
+  animation-play-state: running;
+}
+
+@keyframes eq-bounce {
+  from { height: 4px; }
+  to   { height: 22px; }
+}
+
+/* ── Progress bar ─────────────────────────────────────────── */
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-track {
+  position: relative;
+  height: 6px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.progress-track:hover .progress-thumb { opacity: 1; }
+
+.progress-fill {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  width: calc(var(--progress, 0) * 100%);
+  background: var(--color-accent);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+/* Ponta quente: forja acesa avança com a música (FORJ-RF-01) */
+.progress-fill--playing {
+  background: linear-gradient(
+    to right,
+    var(--color-accent) 0%,
+    var(--color-accent) calc(100% - 48px),
+    var(--color-brasa) 100%
+  );
+}
+
+.progress-thumb {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--progress, 0) * 100%);
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.progress-times {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--color-text-tertiary);
+}
+
+/* ── Transport ────────────────────────────────────────────── */
+.transport-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.transport-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.transport-btn--play {
+  width: 52px;
+  height: 52px;
+}
+
+/* ── Volume ───────────────────────────────────────────────── */
+.volume-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-secondary);
+}
+
+.volume-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  cursor: pointer;
+  outline: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  cursor: pointer;
+}
+
+.volume-value {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+  min-width: 28px;
+  text-align: right;
+}
+
+/* ── Loop chooser ─────────────────────────────────────────── */
+.loop-chooser {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.loop-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.loop-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--color-surface-2);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.loop-btn:hover {
+  background: var(--color-surface-3);
+  border-color: var(--border-default);
+}
+
+.loop-btn--active {
+  background: var(--color-accent-alpha-10);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.loop-btn--pending {
+  animation: loop-pulse 1s ease-in-out infinite;
+}
+
+@keyframes loop-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+.loop-btn-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--loop-color, var(--color-accent));
+  flex-shrink: 0;
+}
+
+.loop-btn-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.loop-btn-range {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.loop-btn--active .loop-btn-range { color: inherit; opacity: 0.7; }
+
+.loop-btn-check {
+  flex-shrink: 0;
+}
+
+.loop-btn-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex-shrink: 0;
+  animation: dot-blink 0.5s step-start infinite;
+}
+
+@keyframes dot-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.loop-pending-hint {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── Right column ─────────────────────────────────────────── */
+.campaign-select-section {
+  flex-shrink: 0;
+}
+
+.track-queue {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.queue-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--color-text-tertiary);
+}
+
+.queue-empty-icon {
+  opacity: 0.5;
+}
+
+.queue-empty-text {
+  font-size: 13px;
+  margin: 0;
+}
+
+.queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow-y: auto;
+}
+
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--color-surface-2);
+  cursor: pointer;
+  transition: border-color 0.1s, background 0.1s;
+  user-select: none;
+}
+
+.queue-item:hover {
+  background: var(--color-surface-3);
+  border-color: var(--border-default);
+}
+
+.queue-item--active {
+  background: var(--color-accent-alpha-10);
+  border-color: var(--color-accent);
+}
+
+.queue-num {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--color-text-tertiary);
+  min-width: 20px;
+}
+
+.queue-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.queue-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.queue-status {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
+.queue-item--active .queue-status {
+  color: var(--color-accent);
+}
+
+.queue-dur {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}

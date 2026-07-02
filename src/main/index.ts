@@ -1,6 +1,6 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, Menu } from 'electron'
 import { join } from 'path'
-import { is } from '@electron-toolkit/utils'
+import { is, optimizer } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc-handlers'
 
 function createWindow(): void {
@@ -9,8 +9,9 @@ function createWindow(): void {
     height: 800,
     minWidth: 1100,
     minHeight: 720,
-    backgroundColor: '#0f0d11',
+    backgroundColor: '#121014',
     show: false,
+    autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       nodeIntegration: false,
@@ -18,6 +19,9 @@ function createWindow(): void {
       sandbox: false
     }
   })
+
+  win.setMenuBarVisibility(false)
+  optimizer.watchWindowShortcuts(win)
 
   win.on('ready-to-show', () => win.show())
 
@@ -29,6 +33,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  Menu.setApplicationMenu(null)
   registerIpcHandlers()
   createWindow()
 })

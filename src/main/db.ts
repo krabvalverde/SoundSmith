@@ -1,8 +1,8 @@
 // src/main/db.ts
 import Database from 'better-sqlite3'
-import { readFileSync } from 'fs'
 import { join } from 'path'
 import { app } from 'electron'
+import migration001 from './migrations/001_initial.sql?raw'
 
 let _db: Database.Database | null = null
 
@@ -10,8 +10,7 @@ export function applyMigrations(db: Database.Database): void {
   db.pragma('foreign_keys = ON')
   const version = db.pragma('user_version', { simple: true }) as number
   if (version < 1) {
-    const sql = readFileSync(join(__dirname, 'migrations', '001_initial.sql'), 'utf-8')
-    db.exec(sql)
+    db.exec(migration001)
     db.pragma('user_version = 1')
   }
 }
