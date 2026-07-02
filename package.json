@@ -1,6 +1,6 @@
 {
   "name": "soundsmith",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Trilhas sonoras dinâmicas e sincronizadas para mesas de RPG",
   "main": "./out/main/index.js",
   "author": "SoundSmith",
