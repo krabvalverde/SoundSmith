@@ -29,6 +29,25 @@ export function calcPositionMs(linearMs: number, loop: LoopMode, durationMs: num
   return Math.min(linearMs, durationMs)
 }
 
+// COR — offset de relógio (hostTime − clientTime), compensado por latência.
+// t1: instante de envio do host (do PING). t2Recv: instante de recepção no cliente (Date.now()).
+// latencyMs: latência one-way medida pelo host (rtt/2); 0 até o primeiro round-trip PONG.
+export function computeClockOffset(t1: number, t2Recv: number, latencyMs: number): number {
+  return t1 + latencyMs - t2Recv
+}
+
+// COR — posição em que o host está "agora", a partir de uma amostra autoritativa.
+// sample.updatedAt está em tempo-do-host; hostNow = Date.now() do cliente + clockOffset.
+export function livePositionMs(
+  sample: { positionMs: number; updatedAt: number; playing: boolean },
+  hostNow: number,
+  loop: LoopMode,
+  durationMs: number
+): number {
+  const elapsed = sample.playing ? Math.max(0, hostNow - sample.updatedAt) : 0
+  return calcPositionMs(sample.positionMs + elapsed, loop, durationMs)
+}
+
 export interface PlayOptions {
   loop?: LoopMode
   startMs?: number

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { clampVolume, msToSeconds, secondsToMs, calcPositionMs } from '../AudioEngine'
+import { clampVolume, msToSeconds, secondsToMs, calcPositionMs, computeClockOffset, livePositionMs } from '../AudioEngine'
 
 describe('AudioEngine utilities', () => {
   it('clampVolume clamps below 0 to 0', () => { expect(clampVolume(-1)).toBe(0) })
@@ -52,5 +52,37 @@ describe('calcPositionMs (COR-RN-02)', () => {
     const loop = { startMs: 30000, endMs: 60000, fadeInMs: 0, fadeOutMs: 0 }
     // 30s region, 5.5 laps in => halfway through a lap => 45000
     expect(calcPositionMs(30000 + 30000 * 5.5, loop, 120000)).toBe(45000)
+  })
+})
+
+describe('computeClockOffset', () => {
+  it('sem latência: offset = t1 − t2Recv', () => {
+    expect(computeClockOffset(1000, 1000, 0)).toBe(0)
+    expect(computeClockOffset(5000, 4800, 0)).toBe(200)
+  })
+  it('compensa a latência one-way', () => {
+    // host mandou em t1=1000, chegou no cliente em 1200, one-way=50 → offset -150
+    expect(computeClockOffset(1000, 1200, 50)).toBe(-150)
+  })
+})
+
+describe('livePositionMs', () => {
+  const dur = 120000
+  it('none tocando: extrapola pela diferença de tempo', () => {
+    expect(livePositionMs({ positionMs: 3000, updatedAt: 1000, playing: true }, 3000, 'none', dur)).toBe(5000)
+  })
+  it('pausado: ignora o tempo decorrido', () => {
+    expect(livePositionMs({ positionMs: 3000, updatedAt: 1000, playing: false }, 9000, 'none', dur)).toBe(3000)
+  })
+  it('full: enrola após o fim da faixa', () => {
+    expect(livePositionMs({ positionMs: 119000, updatedAt: 0, playing: true }, 3000, 'full', dur)).toBe(2000)
+  })
+  it('região: enrola de volta ao início do loop', () => {
+    const loop = { startMs: 30000, endMs: 60000, fadeInMs: 0, fadeOutMs: 0 }
+    // pos 55s + 10s = 65s → 5s dentro da segunda volta → 35s
+    expect(livePositionMs({ positionMs: 55000, updatedAt: 0, playing: true }, 10000, loop, dur)).toBe(35000)
+  })
+  it('offset negativo (hostNow < updatedAt) não retrocede: elapsed clampado a 0', () => {
+    expect(livePositionMs({ positionMs: 3000, updatedAt: 5000, playing: true }, 4000, 'none', dur)).toBe(3000)
   })
 })
