@@ -5,6 +5,7 @@ import { MasterAvatar } from '../components/MasterAvatar'
 import { Profile, CampaignWithCount, RoomStateInfo, RoomPlayerInfo } from '../types/soundsmith'
 import { useSettingsStore } from '../store/settings-store'
 import { getAudioEngine } from '../audio/AudioEngine'
+import { SelecionarCampanhaModal } from '../modals/SelecionarCampanhaModal'
 import './Sala.css'
 
 interface Props {
@@ -32,6 +33,7 @@ export function Sala({ profile, onEntrarNaSala }: Props) {
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const [playing, setPlaying] = useState(false)
+  const [showSelecionarCampanha, setShowSelecionarCampanha] = useState(false)
 
   useEffect(() => {
     window.soundsmith.room.getState().then(setRoomState)
@@ -46,15 +48,9 @@ export function Sala({ profile, onEntrarNaSala }: Props) {
     return () => clearInterval(id)
   }, [])
 
-  async function handleCreateRoom() {
+  async function handleCreateRoom(campaignId: number) {
+    setShowSelecionarCampanha(false)
     setError('')
-    // Need an active campaign — read from player settings
-    const campaignIdStr = await window.soundsmith.settings.get('player_campaign_id')
-    if (!campaignIdStr) {
-      setError('Abra o Player, selecione uma campanha e volte para criar a sala.')
-      return
-    }
-    const campaignId = parseInt(campaignIdStr)
     const port = parseInt(settings['host_port'] ?? '7842')
     const syncBufferMs = parseInt(settings['sync_buffer_ms'] ?? '120')
     setLoading(true)
@@ -144,7 +140,7 @@ export function Sala({ profile, onEntrarNaSala }: Props) {
                 <div className="hero-actions">
                   <button
                     className="btn btn-primary"
-                    onClick={handleCreateRoom}
+                    onClick={() => setShowSelecionarCampanha(true)}
                     disabled={loading}
                   >
                     {loading ? 'Criando…' : <><Radio size={14} /> Criar Sala</>}
@@ -240,6 +236,13 @@ export function Sala({ profile, onEntrarNaSala }: Props) {
           </div>
         </div>
       </div>
+
+      {showSelecionarCampanha && (
+        <SelecionarCampanhaModal
+          onConfirm={handleCreateRoom}
+          onClose={() => setShowSelecionarCampanha(false)}
+        />
+      )}
     </div>
   )
 }
