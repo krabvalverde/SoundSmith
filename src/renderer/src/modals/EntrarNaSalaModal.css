@@ -506,6 +506,7 @@
 }
 
 .session-progress-track {
+  position: relative;      /* containing block do fill absoluto herdado do Player.css */
   height: 4px;
   background: var(--color-surface-2);
   border-radius: 2px;
@@ -513,6 +514,7 @@
 }
 
 .session-progress-track .progress-fill {
+  position: relative;      /* reseta o position:absolute global de Player.css:216 */
   height: 100%;
   width: calc(var(--progress) * 100%);
   background: var(--color-accent);
