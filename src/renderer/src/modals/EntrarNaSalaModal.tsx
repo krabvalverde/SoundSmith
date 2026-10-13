@@ -1,7 +1,7 @@
 // src/renderer/src/modals/EntrarNaSalaModal.tsx
 import { useState, useRef, useEffect } from 'react'
 import { X, Check, Loader, AlertCircle, Volume2, VolumeX } from 'lucide-react'
-import { getAudioEngine, LoopMode, computeClockOffset } from '../audio/AudioEngine'
+import { getAudioEngine, LoopMode, computeClockOffset, livePositionMs } from '../audio/AudioEngine'
 import type { CampaignManifest, TrackManifestEntry, LoopManifestEntry, RoomPlaybackState } from '../types/soundsmith'
 import './EntrarNaSalaModal.css'
 
@@ -243,10 +243,7 @@ export function EntrarNaSalaModal({ onClose }: Props) {
       }
 
       if (msg.type === 'CMD') {
-        const atHostTime = Number(msg.atHostTime)
-        const offset = clockOffsetRef.current
-        const delay = Math.max(0, atHostTime - offset - Date.now())
-        setTimeout(() => executeCommand(msg), delay)
+        executeCommand(msg)
         return
       }
 
@@ -283,36 +280,55 @@ export function EntrarNaSalaModal({ onClose }: Props) {
 
   function applyState(ps: RoomPlaybackState, m: CampaignManifest) {
     const track = ps.trackId !== null ? m.tracks.find(t => t.id === ps.trackId) : undefined
+    const mode = modeFromManifest(ps.loopMode, track)
+    const dur = track?.durationMs ?? 0
+    const hostNow = Date.now() + clockOffsetRef.current
+    const liveMs = livePositionMs(
+      { positionMs: ps.positionMs, updatedAt: ps.updatedAt, playing: ps.playing },
+      hostNow, mode, dur
+    )
+
     setClientState({
       trackId: ps.trackId,
       trackTitle: track?.title ?? '—',
       campaignName: m.name,
       playing: ps.playing,
-      positionMs: ps.positionMs,
-      durationMs: track?.durationMs ?? 0,
+      positionMs: liveMs,
+      durationMs: dur,
       updatedAt: ps.updatedAt,
       activeLoopName: loopNameForMode(ps.loopMode, track),
     })
 
-    if (ps.trackId !== null) {
-      const buf = audioBufsRef.current.get(ps.trackId)
+    if (ps.trackId === null) return
+    const engine = getAudioEngine()
+    const st = engine.getState()
+    const buf = audioBufsRef.current.get(ps.trackId)
+
+    if (st.currentTrackId !== String(ps.trackId)) {
       if (buf) {
-        const loopMode = modeFromManifest(ps.loopMode, track)
-        // Estimate current position
-        const elapsed = Date.now() - (ps.updatedAt - clockOffsetRef.current)
-        const seekMs = ps.playing ? ps.positionMs + Math.max(0, elapsed) : ps.positionMs
-        getAudioEngine().loadTrack(String(ps.trackId), buf).then(() => {
-          if (ps.playing) {
-            getAudioEngine().play({ loop: loopMode, startMs: seekMs })
-          }
+        engine.loadTrack(String(ps.trackId), buf).then(() => {
+          if (ps.playing) engine.play({ loop: mode, startMs: liveMs })
         })
       }
+      return
+    }
+
+    // Mesma faixa já carregada: corrigir sem recarregar (heartbeat não pode reiniciar o áudio).
+    if (ps.playing && !st.playing) {
+      engine.play({ loop: mode, startMs: liveMs })
+    } else if (!ps.playing && st.playing) {
+      engine.pause()
+    } else if (ps.playing && st.playing && Math.abs(st.positionMs - liveMs) > 300) {
+      engine.seek(liveMs)  // re-alinhar só em drift real
     }
   }
 
   function executeCommand(msg: Record<string, unknown>) {
     const cmd = String(msg.cmd)
     const m = manifestRef.current
+    // Track atual vem do engine: clientState aqui é a closure de handleConnect (stale).
+    const currentId = Number(getAudioEngine().getState().currentTrackId)
+    const currentTrack = m?.tracks.find(t => t.id === currentId)
 
     if (cmd === 'LOAD_TRACK') {
       const trackId = Number(msg.trackId)
@@ -336,16 +352,18 @@ export function EntrarNaSalaModal({ onClose }: Props) {
     if (cmd === 'PLAY') {
       const loopMode = msg.loopMode as RoomPlaybackState['loopMode']
       const positionMs = Number(msg.positionMs ?? 0)
-      const track = clientState.trackId !== null && m
-        ? m.tracks.find(t => t.id === clientState.trackId) : undefined
-      const mode = modeFromManifest(loopMode, track)
-      getAudioEngine().play({ loop: mode, startMs: positionMs })
+      const hostTime = Number(msg.hostTime ?? Date.now() + clockOffsetRef.current)
+      const mode = modeFromManifest(loopMode, currentTrack)
+      const dur = getAudioEngine().getState().durationMs
+      const hostNow = Date.now() + clockOffsetRef.current
+      const seekMs = livePositionMs({ positionMs, updatedAt: hostTime, playing: true }, hostNow, mode, dur)
+      getAudioEngine().play({ loop: mode, startMs: seekMs })
       setClientState(prev => ({
         ...prev,
         playing: true,
-        positionMs,
-        updatedAt: Date.now() + clockOffsetRef.current,
-        activeLoopName: loopNameForMode(loopMode, track),
+        positionMs: seekMs,
+        updatedAt: hostTime,
+        activeLoopName: loopNameForMode(loopMode, currentTrack),
       }))
     }
 
@@ -356,19 +374,24 @@ export function EntrarNaSalaModal({ onClose }: Props) {
 
     if (cmd === 'SEEK') {
       const posMs = Number(msg.positionMs)
-      getAudioEngine().seek(posMs)
-      setClientState(prev => ({ ...prev, positionMs: posMs }))
+      const hostTime = Number(msg.hostTime ?? Date.now() + clockOffsetRef.current)
+      const st = getAudioEngine().getState()
+      const hostNow = Date.now() + clockOffsetRef.current
+      const seekMs = livePositionMs(
+        { positionMs: posMs, updatedAt: hostTime, playing: st.playing },
+        hostNow, st.activeLoop ?? 'none', st.durationMs
+      )
+      getAudioEngine().seek(seekMs)
+      setClientState(prev => ({ ...prev, positionMs: seekMs }))
     }
 
     if (cmd === 'SET_LOOP') {
       const loopMode = msg.loopMode as RoomPlaybackState['loopMode']
-      const track = clientState.trackId !== null && m
-        ? m.tracks.find(t => t.id === clientState.trackId) : undefined
-      const mode = modeFromManifest(loopMode, track)
+      const mode = modeFromManifest(loopMode, currentTrack)
       getAudioEngine().scheduleLoopChange(mode)
       setClientState(prev => ({
         ...prev,
-        activeLoopName: loopNameForMode(loopMode, track),
+        activeLoopName: loopNameForMode(loopMode, currentTrack),
       }))
     }
 

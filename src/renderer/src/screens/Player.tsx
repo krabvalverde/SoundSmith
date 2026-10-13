@@ -153,7 +153,7 @@ export function Player({ onNavigateToCampanhas }: Props) {
 
       broadcastCmd({ cmd: 'LOAD_TRACK', trackId: track.id })
       if (autoPlay) {
-        broadcastCmd({ cmd: 'PLAY', positionMs: 0, loopMode: 'none' })
+        broadcastCmd({ cmd: 'PLAY', positionMs: 0, loopMode: 'none', hostTime: Date.now() })
         updateRoomPlayback({ trackId: track.id, playing: true, positionMs: 0, loopMode: 'none' })
       } else {
         updateRoomPlayback({ trackId: track.id, playing: false, positionMs: 0, loopMode: 'none' })
@@ -198,7 +198,7 @@ export function Player({ onNavigateToCampanhas }: Props) {
       if (!track) return
       if (state.currentTrackId === String(track.id)) {
         engine.play({ loop: loopMode, startMs: state.positionMs })
-        broadcastCmd({ cmd: 'PLAY', positionMs: state.positionMs, loopMode: toRoomLoopMode(loopMode) })
+        broadcastCmd({ cmd: 'PLAY', positionMs: state.positionMs, loopMode: toRoomLoopMode(loopMode), hostTime: Date.now() })
         updateRoomPlayback({ playing: true, positionMs: state.positionMs, loopMode: toRoomLoopMode(loopMode) })
       } else {
         doLoadTrack(track, true)
@@ -240,7 +240,7 @@ export function Player({ onNavigateToCampanhas }: Props) {
       const frac = Math.max(0, Math.min(1, (x - rect.left) / rect.width))
       const ms = frac * audioState.durationMs
       getAudioEngine().seek(ms)
-      broadcastCmd({ cmd: 'SEEK', positionMs: Math.round(ms) })
+      broadcastCmd({ cmd: 'SEEK', positionMs: Math.round(ms), hostTime: Date.now() })
       updateRoomPlayback({ positionMs: Math.round(ms) })
     }
     doSeek(e.clientX)
