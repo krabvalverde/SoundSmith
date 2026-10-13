@@ -48,6 +48,20 @@ export function livePositionMs(
   return calcPositionMs(sample.positionMs + elapsed, loop, durationMs)
 }
 
+// COR — ponto de partida ao trocar de modo de loop durante a reprodução.
+// Alvo região → início da região (pulo intencional).
+// Alvo none/full: continua de onde está — do fim da região atual (quando o loop
+//   corrente termina) ou da posição corrente (quando já toca linear).
+export function continuationStartMs(
+  newLoop: LoopMode,
+  currentLoop: LoopMode | null,
+  currentPositionMs: number
+): number {
+  if (typeof newLoop === 'object' && newLoop) return newLoop.startMs
+  if (currentLoop && typeof currentLoop === 'object') return currentLoop.endMs
+  return currentPositionMs
+}
+
 export interface PlayOptions {
   loop?: LoopMode
   startMs?: number
@@ -202,7 +216,7 @@ export class AudioEngine {
     const crossfade = opts.crossfade ?? false
 
     const fadeInMs = typeof newLoop === 'object' ? newLoop.fadeInMs : 0
-    const startMs = typeof newLoop === 'object' ? newLoop.startMs : 0
+    const startMs = continuationStartMs(newLoop, current, secondsToMs(this._positionSeconds))
 
     if (current && typeof current === 'object') {
       const posMs = secondsToMs(this._positionSeconds)

@@ -394,7 +394,8 @@ export function EntrarNaSalaModal({ onClose }: Props) {
     if (cmd === 'SET_LOOP') {
       const loopMode = msg.loopMode as RoomPlaybackState['loopMode']
       const mode = modeFromManifest(loopMode, currentTrack)
-      getAudioEngine().scheduleLoopChange(mode)
+      // Pausado: só o rótulo muda; o próximo PLAY já traz o loopMode (igual ao Player.tsx:selectLoop).
+      if (getAudioEngine().getState().playing) getAudioEngine().scheduleLoopChange(mode)
       setClientState(prev => ({
         ...prev,
         activeLoopName: loopNameForMode(loopMode, currentTrack),

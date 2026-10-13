@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { clampVolume, msToSeconds, secondsToMs, calcPositionMs, computeClockOffset, livePositionMs } from '../AudioEngine'
+import { clampVolume, msToSeconds, secondsToMs, calcPositionMs, computeClockOffset, livePositionMs, continuationStartMs } from '../AudioEngine'
 
 describe('AudioEngine utilities', () => {
   it('clampVolume clamps below 0 to 0', () => { expect(clampVolume(-1)).toBe(0) })
@@ -84,5 +84,29 @@ describe('livePositionMs', () => {
   })
   it('offset negativo (hostNow < updatedAt) não retrocede: elapsed clampado a 0', () => {
     expect(livePositionMs({ positionMs: 3000, updatedAt: 5000, playing: true }, 4000, 'none', dur)).toBe(3000)
+  })
+})
+
+describe('continuationStartMs', () => {
+  const regionA = { startMs: 30000, endMs: 60000, fadeInMs: 0, fadeOutMs: 0 }
+  const regionB = { startMs: 90000, endMs: 100000, fadeInMs: 0, fadeOutMs: 0 }
+
+  it('região → sem repetição: continua do fim da região atual', () => {
+    expect(continuationStartMs('none', regionA, 45000)).toBe(60000)
+  })
+  it('região → faixa em loop: continua do fim da região atual', () => {
+    expect(continuationStartMs('full', regionA, 45000)).toBe(60000)
+  })
+  it('faixa em loop → sem repetição: continua da posição corrente', () => {
+    expect(continuationStartMs('none', 'full', 42000)).toBe(42000)
+  })
+  it('sem repetição → faixa em loop: continua da posição corrente', () => {
+    expect(continuationStartMs('full', 'none', 42000)).toBe(42000)
+  })
+  it('região → outra região: pula pro início da nova região (não regride)', () => {
+    expect(continuationStartMs(regionB, regionA, 45000)).toBe(90000)
+  })
+  it('none/full → região: pula pro início da região', () => {
+    expect(continuationStartMs(regionB, 'none', 42000)).toBe(90000)
   })
 })
