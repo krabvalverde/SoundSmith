@@ -1,7 +1,7 @@
 // src/renderer/src/modals/EntrarNaSalaModal.tsx
 import { useState, useRef, useEffect } from 'react'
 import { X, Check, Loader, AlertCircle, Volume2, VolumeX } from 'lucide-react'
-import { getAudioEngine, LoopMode } from '../audio/AudioEngine'
+import { getAudioEngine, LoopMode, computeClockOffset } from '../audio/AudioEngine'
 import type { CampaignManifest, TrackManifestEntry, LoopManifestEntry, RoomPlaybackState } from '../types/soundsmith'
 import './EntrarNaSalaModal.css'
 
@@ -235,8 +235,9 @@ export function EntrarNaSalaModal({ onClose }: Props) {
 
       if (msg.type === 'PING') {
         const t1 = Number(msg.t1)
+        const latency = Number(msg.latencyMs ?? 0)
         const now = Date.now()
-        clockOffsetRef.current = t1 - now  // rough: offset = serverTime - clientTime
+        clockOffsetRef.current = computeClockOffset(t1, now, latency)
         ws.send(JSON.stringify({ type: 'PONG', t1, t2: now }))
         return
       }

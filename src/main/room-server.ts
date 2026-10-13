@@ -217,7 +217,7 @@ export class RoomServer {
 
         player.pingTimer = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'PING', t1: Date.now() }))
+            ws.send(JSON.stringify({ type: 'PING', t1: Date.now(), latencyMs: player.latencyMs ?? 0 }))
           }
         }, 3000)
 
