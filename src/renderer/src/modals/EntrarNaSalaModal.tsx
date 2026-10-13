@@ -87,6 +87,12 @@ export function EntrarNaSalaModal({ onClose }: Props) {
   const syncBufferMsRef = useRef(120)
   const audioBufsRef = useRef<Map<number, ArrayBuffer>>(new Map())
   const manifestRef = useRef<CampaignManifest | null>(null)
+  // CMD/STATE em série: PLAY após LOAD_TRACK espera o decode (a posição é extrapolada, então a espera não atrasa).
+  const queueRef = useRef<Promise<unknown>>(Promise.resolve())
+
+  function enqueue(fn: () => unknown) {
+    queueRef.current = queueRef.current.then(fn).catch(err => console.error('Sala: comando falhou', err))
+  }
 
   // RAF for position display in session mode
   useEffect(() => {
@@ -223,7 +229,7 @@ export function EntrarNaSalaModal({ onClose }: Props) {
 
         // Apply initial playback state if provided
         const ps = msg.playbackState as RoomPlaybackState | null
-        if (ps) applyState(ps, m)
+        if (ps) enqueue(() => applyState(ps, m))
 
         // Ready
         ws.send(JSON.stringify({ type: 'READY' }))
@@ -243,13 +249,13 @@ export function EntrarNaSalaModal({ onClose }: Props) {
       }
 
       if (msg.type === 'CMD') {
-        executeCommand(msg)
+        enqueue(() => executeCommand(msg))
         return
       }
 
       if (msg.type === 'STATE') {
         const ps = msg as unknown as RoomPlaybackState
-        if (manifestRef.current) applyState(ps, manifestRef.current)
+        enqueue(() => manifestRef.current && applyState(ps, manifestRef.current))
         return
       }
 
@@ -278,7 +284,7 @@ export function EntrarNaSalaModal({ onClose }: Props) {
     setDownloadProgress({ current: tracks.length, total: tracks.length })
   }
 
-  function applyState(ps: RoomPlaybackState, m: CampaignManifest) {
+  function applyState(ps: RoomPlaybackState, m: CampaignManifest): Promise<void> | void {
     const track = ps.trackId !== null ? m.tracks.find(t => t.id === ps.trackId) : undefined
     const mode = modeFromManifest(ps.loopMode, track)
     const dur = track?.durationMs ?? 0
@@ -305,12 +311,12 @@ export function EntrarNaSalaModal({ onClose }: Props) {
     const buf = audioBufsRef.current.get(ps.trackId)
 
     if (st.currentTrackId !== String(ps.trackId)) {
-      if (buf) {
-        engine.loadTrack(String(ps.trackId), buf).then(() => {
-          if (ps.playing) engine.play({ loop: mode, startMs: liveMs })
-        })
-      }
-      return
+      if (!buf) return
+      return engine.loadTrack(String(ps.trackId), buf).then(() => {
+        // Recalcula após o decode: o tempo gasto decodificando também passou no host.
+        const ms = livePositionMs(ps, Date.now() + clockOffsetRef.current, mode, dur)
+        if (ps.playing) engine.play({ loop: mode, startMs: ms })
+      })
     }
 
     // Mesma faixa já carregada: corrigir sem recarregar (heartbeat não pode reiniciar o áudio).
@@ -323,7 +329,7 @@ export function EntrarNaSalaModal({ onClose }: Props) {
     }
   }
 
-  function executeCommand(msg: Record<string, unknown>) {
+  function executeCommand(msg: Record<string, unknown>): Promise<void> | void {
     const cmd = String(msg.cmd)
     const m = manifestRef.current
     // Track atual vem do engine: clientState aqui é a closure de handleConnect (stale).
@@ -335,7 +341,7 @@ export function EntrarNaSalaModal({ onClose }: Props) {
       const buf = audioBufsRef.current.get(trackId)
       const track = m?.tracks.find(t => t.id === trackId)
       if (buf && m) {
-        getAudioEngine().loadTrack(String(trackId), buf).then(() => {
+        return getAudioEngine().loadTrack(String(trackId), buf).then(() => {
           setClientState(prev => ({
             ...prev,
             trackId,

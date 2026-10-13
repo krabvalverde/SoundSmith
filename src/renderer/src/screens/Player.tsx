@@ -82,6 +82,16 @@ export function Player({ onNavigateToCampanhas }: Props) {
     return () => { window.soundsmith.room.offStateChanged() }
   }, [])
 
+  // Heartbeat: reemite a posição autoritativa para os jogadores corrigirem drift.
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!roomActiveRef.current) return
+      if (!getAudioEngine().getState().playing) return
+      updateRoomPlayback()
+    }, 2000)
+    return () => clearInterval(id)
+  }, [])
+
   // RAF loop — polls engine state ~60fps
   useEffect(() => {
     let raf: number

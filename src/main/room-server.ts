@@ -124,6 +124,11 @@ export class RoomServer {
 
   setPlaybackState(state: RoomPlaybackState) {
     this.playbackState = state
+    // Só jogadores já sincronizados: quem ainda baixa não tem áudio pronto.
+    const str = JSON.stringify({ type: 'STATE', ...state })
+    for (const p of this.players.values()) {
+      if (p.status === 'synced' && p.ws.readyState === WebSocket.OPEN) p.ws.send(str)
+    }
   }
 
   broadcastCmd(cmd: Record<string, unknown>) {
